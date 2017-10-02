@@ -1,0 +1,39 @@
+TAB TRACKER VEUJS/EXPRESS JS APPLICATION
+Install the latest version of NODE.
+Create a github repo for the project and clone into your local workspaces
+Install VueJs globally from your command line $npm install -g vue-cli
+Next initiate a vueJs template into a client folder where the all VueJs code would reside $vue init webpack(//template name) client (//project-name)
+Using/Running npm install from the command line, you would install all dependencies in the package.json file
+In case it gives npm ERR! code EINTEGRITY error, follow the following steps
+ npm cache clean --force
+ npm i -g npm
+ npm install
+
+After successful installation, run npm run dev
+Then run localhost:8080 from your browser, you should see welcome to VueJS
+Next is to make a server folder in your tab-tracker folder...mkdir server from command prompt
+(This is to ut the client side and server side codes to be in different folders)
+
+cd into the server folder and $ npm init -f
+That would create the package.json file
+Then $ npm install --save nodemon eslint
+(nodemon helps keep restarting the server when you make any change to your code)
+If you have issues like permission denied error use $ npm config set unsafe-perm true
+
+After installing nodemon and eslint, update the scripts secion of the package.json file with 
+
+   "start": "nodemon src/app.js --exec  \"npm run lint && node\"",
+    "lint": "eslint src/**/*.js",
+
+
+Create a new folder in your server folder and name it src, then create a file called app.js inside the src folder
+ 
+ 
+
+Then initiate eslint $ node ./node_modules/eslint/bin/eslint.js --init
+Choose the following options:
+>use a popular style guide
+>Standard
+>Javascript
+
+after a successful installation $npm start  
