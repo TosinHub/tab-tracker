@@ -37,3 +37,97 @@ Choose the following options:
 >Javascript
 
 after a successful installation $npm start  
+Then install other node dependencies for the application $ npm install --save express body-parser cors morgan
+(if any error run $npm config set unsafe-perm true)
+
+Then $npm start again
+
+
+Then import the new modules just installed in the app.js file in the src folder, putting then in a const variable as seen bleow
+
+const express = require('express')
+const bodyParser = require('body-parser')
+const cors = require('cors')
+const morgan = require('morgan')
+
+const app = express()
+app.use(morgan('combined'))
+app.use(bodyParser.json())
+app.use(cors())
+
+app.get('/status', (req, res) => {
+  res.send({
+    message: 'hello world'
+  })
+})
+
+app.listen(process.env.PORT || 8081)
+
+
+Then access localhost:8081/status from your browser
+
+
+Now making the client have access to the server side using http request and axios library would be installed to achieve this
+cd into client folder
+$ npm install --save axios
+
+From yout text editor
+
+Create a new folder in the src folder of the client folder and name it services
+Create Api.js file inside the folder
+Write this code in the Api.js file
+
+import axios from 'axios'
+//return a connector
+export default () => {
+  return axios.create({
+    baseURL: `http://localhost:8081` //pointing to the backend url
+  }) 
+}
+
+Create AuthenticationService.js inside same services folder and place this code inside which would post the register credentials into the the imported Api post request from the api.js file
+
+import Api from '@/services/Api'
+
+export default {
+  register (credentials){
+    return Api().post('register', credentials)
+  }
+}
+
+Then go to the server and edit the /status endpoint to the code below and test using Postman from your google app
+
+app.post('/register', (req, res) => {
+  res.send({
+    message: `Your user with ${req.body.email} was registered! Great!` //note ` is not '
+  })
+})
+
+From the UI or client side, open the router folder and open the index.js file and add Register router path and it would look like this
+
+import Vue from 'vue'
+import Router from 'vue-router'
+import Hello from '@/components/Hello'
+import Register from '@/components/Register' //This must be added to import the Register component
+
+Vue.use(Router)
+
+export default new Router({
+  routes: [
+    {
+      path: '/',
+      name: 'Hello',
+      component: Hello
+    },
+     {
+      path: '/register',
+      name: 'register',
+      component: Register
+    }
+  ]
+})
+
+
+
+Then open the component folder and add Register.Vue file and put in this code
+
