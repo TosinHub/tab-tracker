@@ -129,5 +129,204 @@ export default new Router({
 
 
 
-Then open the component folder and add Register.Vue file and put in this code
+Then open the component folder and add Register.Vue file and put in this code in the script session
+
+<template>
+  <div>
+    <h1>Register</h1>
+<input type="email" name="email" placeholder="email" v-model="email">
+<input type="password" name="password" placeholder="password" v-model="password">
+<br>
+<button @click="register">Register</button>
+
+  </div>
+</template>
+
+<script>
+import AuthenticationService from '@/services/AuthenticationService'
+export default {
+
+  data () {
+    return {
+      email: '',
+      password: ''
+    }
+  },
+  methods: {
+    async register () {
+      const response = await AuthenticationService.register({
+        email: this.email,
+        password: this.password
+      })
+      console.log(response.data)
+    }
+  }
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+
+</style>
+
+
+Then access the register route from you browser and check the console to see the response from the server  
+
+
+
+ USING SEQUELIZE DB 
+
+CD into the server folder
+Install sequelize and its dependencies
+$npm install --save sequelize sqlite3@3.1.8
+
+Create a new file called routes.js in the src folder and cut the app.post route and place the code in the routes.js file, exporting it as seen below
+
+module.exports = (app) => {
+
+app.post('/register', (req, res) => {
+  res.send({
+    message: `Your user with ${req.body.email} was registered! Great!`
+  })
+})	
+}
+
+Replace that code with require('./routes')(app) in the app.js file
+
+Create a new folder called config inside the src folder and add config.js file and export the port number...Place this code
+
+module.exports = {
+  port: 8081
+}
+
+
+Then update your app.js file in src folder arrive at the following code to show previous refactoring to show sequelize module
+
+const express = require('express')
+const bodyParser = require('body-parser')
+const cors = require('cors')
+const morgan = require('morgan')
+const {sequelize} = require('./models') // importing sequelize object
+const config = require('./config/config')
+
+const app = express()
+app.use(morgan('combined'))
+app.use(bodyParser.json())
+app.use(cors())
+
+require('./routes')(app)
+
+sequelize.sync()
+  .then(() => {
+    app.listen(config.port)
+    console.log(`Server started on port ${config.port}`)
+  })
+
+
+Check your server it would indicate a model not found
+Create a folder called models inside the src folder and create a User.js file inside which is going the be the user model. Place the code in the file
+
+module.exports = (sequelize, DataTypes) =>
+ sequelize.define('User', {
+  email: {
+  	type: DataTypes.STRING,
+  	unique: true
+  },
+  password: DataTypes.STRING
+ })
+
+Then create another file inside the models folder called index.js and put the following codes
+
+const fs = require('fs')
+const path = require('path')
+const Sequelize = require('Sequelize')
+const config = require('../config/config')
+const db = {}
+
+const sequelize = new Sequelize(
+  config.db.database,
+  config.db.user,
+  config.db.password,
+  config.db.options
+)
+
+fs
+  .readdirSync(__dirname)
+  .filter((file) =>
+    file !== 'index.js'
+  )
+  .forEach((file) => {
+    const model = sequelize.import(path.join(__dirname, file))
+    db[model.name] = model
+  })
+
+db.sequelize = sequelize
+db.Sequelize = Sequelize
+
+module.exports = db
+
+Then update the config.js file to include the  database env variables. New code
+
+module.exports = {
+  port: 8081,
+  db: {
+    database: process.env.DB_NAME || 'tabtracker',
+    user: process.env.DB_USER || 'tabtracker',
+    password: process.env.DB_PASS || 'tabtracker',
+    options: {
+      dialect: process.env.DIALECT || 'sqlite',
+      host: process.env.HOST || 'localhost',
+      storage: './tabtracker.sqlite'
+    }
+  }
+}
+
+
+Then check the cmd where the server is restarting, the new table would have been created in the db
+
+Now create a new  folder called controllers, controller is basically where we have all the end point defined
+In the controller folder create AuthenticationController.js, put this code
+
+module.exports = {
+  register (req, res) {
+    res.send({
+      message: `Your user with ${req.body.email} was registered! Great!`
+    })
+  }
+}
+
+The code above is from the router.js file which would be updated to get the controller into the route,(refactoring)
+The routes.js file would look like this
+
+const AuthenticationController = require('./controllers/AuthenticationController')
+module.exports = (app) => {
+  app.post('/register', AuthenticationController.register)
+}
+
+
+Next is to create a user model to help new users register into the database, this would be done by updating the Authentication.js file
+
+const {User} = require('../models')
+
+module.exports = {
+  async register (req, res) {
+    try {
+      const user = await User.create(req.body)
+      res.send(user.toJSON())
+    } catch (err) {
+      res.status(400).send({
+        error: 'This email account is already in use'
+      })
+    }
+  }
+}
+
+Using your postman, send a post request to register a new user, it would register first showing details in the body, if you try to send same detail again, 
+it would return an error that email already exist, this is made possible because we made the email unique in the user model
+
+Next is to install a verification framework called joi to help validate request like that of email must be exact email
+
+
+
+
 
