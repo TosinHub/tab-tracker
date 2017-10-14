@@ -1,5 +1,4 @@
 const Joi = require('joi')
-
 module.exports = {
   register (req, res, next) {
     const schema = {
@@ -8,8 +7,7 @@ module.exports = {
         new RegExp('^[a-zA-Z0-9]{8,32}$')
       )
     }
-
-    const {error} = Joi.validate(req.body, schema)
+    const { error } = Joi.validate(req.body, schema)
 
     if (error) {
       switch (error.details[0].context.key) {
