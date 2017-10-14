@@ -33,12 +33,4 @@ export default {
 .input-group--text-field input{
   border-bottom: 1px solid black;
 }
-.toolbar__title{
-  color: white;
-}
-
-.btn__content{
-  color: white;
-}
-
 </style>

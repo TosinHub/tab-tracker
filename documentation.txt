@@ -437,4 +437,144 @@ export default {
 
 
 
- Next to help style the app, we use vuetify framework, so we $npm install --save vuetify
+ Next to help style the app, we use vuetify framework, so we $npm install --save vuetify and import it in the main.js file
+
+// The Vue build version to load with the `import` command
+// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
+
+import Vue from 'vue'
+
+import App from './App'
+
+import router from './router'
+
+import Vuetify from 'vuetify'
+
+import 'vuetify/dist/vuetify.min.css'
+
+
+Vue.config.productionTip = false
+
+Vue.use(Vuetify)
+
+
+/* eslint-disable no-new */
+
+new Vue({
+  
+el: '#app',
+
+  router,
+  
+template: '<App/>',
+ 
+ components: { App }
+
+})
+
+
+
+
+
+
+
+
+
+
+
+
+Create an header.vue file for the whole application to adopt one header...Implenting various links
+
+<template>
+ <v-toolbar fixed class="cyan" dark>
+   <v-toolbar-title class="mr-4" ><span @click="navigateTo({name: 'home'})" class="home">Tab Tracker</span> </v-toolbar-title>
+
+ <v-toolbar-items>
+   <v-btn flat dark>Browse</v-btn>
+ </v-toolbar-items>
+ <v-spacer></v-spacer>
+ <v-toolbar-items>
+   
+    <v-btn flat dark 
+ @click="navigateTo({name: 'login'})"
+ >Login</v-btn>
+
+    <v-btn flat dark 
+ @click="navigateTo({name: 'register'})"
+ >Sign Up</v-btn>
+ 
+ </v-toolbar-items>
+ </v-toolbar>
+</template>
+
+<script>
+export default{
+  methods: {
+    navigateTo (route) {
+      this.$router.push(route)
+    }
+  }
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+.home{
+  cursor: pointer;
+}
+</style>
+
+
+The app.vue project would also be updated to adopt the header.vue page
+
+<template>
+  <div id="app">
+    <v-app><page-header />
+    <main>
+      <v-container fluid> <router-view></router-view></v-container>
+    </main>
+  
+  </v-app>
+    
+   
+   
+  </div>
+</template>
+
+
+<script>
+
+import PageHeader from '@/components/Header.vue'
+
+export default {
+  name: 'app',
+  components: {
+    PageHeader
+  }
+}
+
+</script>
+
+
+<style>
+#app {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  text-align: center;
+  color: #2c3e50;
+ 
+ margin-top: 60px;
+}
+.input-group--text-field input{
+  border-bottom: 1px solid black;
+}
+
+</style>
+
+
+
+
+
