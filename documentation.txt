@@ -1033,22 +1033,30 @@ export default {
 }
 </script>
 
-From the isUseLoggedIn set in the store.js file, we update the header.vue to hid buttons when one logged in
+From the isUseLoggedIn set in the store.js file, we update the header.vue to hid buttons when one logged in, we also implement the
+logout button to show when someone is logged in. The logout function would be imlemented in the script session to return to the 
+homepage 
 
 <template>
  <v-toolbar fixed class="cyan" dark>
    <v-toolbar-title class="mr-4" ><span @click="navigateTo({name: 'home'})" class="home">Tab Tracker</span> </v-toolbar-title>
 
  <v-toolbar-items>
-   <v-btn flat dark>Browse</v-btn>
+   <v-btn   flat dark 
+ @click="navigateTo({name: 'songs'})" //Implement this on the route ...index.js folder in the route folder, then create a song.vue in the component folder and drop an empty template
+
+   >Browse</v-btn>
  </v-toolbar-items>
- <v-spacer></v-spacer>
- <v-toolbar-items>
    
     <v-btn
     v-if="!$store.state.isUserLoggedIn" flat dark 
  @click="navigateTo({name: 'login'})"
  >Login</v-btn>
+
+<v-btn
+    v-if="$store.state.isUserLoggedIn" flat dark 
+ @click="logout"
+ >Logout</v-btn>
 
     <v-btn
     v-if="!$store.state.isUserLoggedIn"
@@ -1065,6 +1073,13 @@ export default{
   methods: {
     navigateTo (route) {
       this.$router.push(route)
+    },
+ logout () {
+      this.$store.dispatch('setToken', null)
+      this.$store.dispatch('setUser', null)
+      this.$router.push({
+        name: 'home'
+      })
     }
   }
 }
@@ -1076,6 +1091,141 @@ export default{
   cursor: pointer;
 }
 </style>
+
+
+Create a new componemt called panel.vue. The purpose of the panel is to be able to use it in any of the component, this is if various components would be using it
+The panel view would eventually look like this:
+
+<template>
+<div class="white elevation-2">
+        <v-toolbar flat dense class="cyan" dark>
+          <v-toolbar-title>{{title}}</v-toolbar-title>
+        </v-toolbar>
+      
+        <div class="pl-4 pr-4 pt-2 pb-2">
+            <slot>
+                No slot content defined
+            </slot>
+        </div>
+       </div> 
+</template>
+
+<script>
+export default {
+  props: [
+    'title'
+  ]
+
+}
+</script>
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+
+</style>
+
+To display songs which would be shown when the Browse is clicked on the songs.vue would be updated as below
+
+<template>
+ <v-layout column>
+     <v-flex xs6 offset-xs3>
+        <panel title="Songs">
+            <div v-for="song in songs" :key="song.title">
+                {{song.title}}
+                {{song.artist}}
+                {{song.album}}
+            </div>
+        </panel>
+     </v-flex>
+ </v-layout>
+</template>
+
+<script>
+import SongsService from '@/services/SongsService'
+import Panel from '@/components/Panel'
+export default {
+  components: {
+    Panel
+  },
+  data () {
+    return {
+      songs: []
+    }
+  },
+  async mounted () {
+    this.songs = (await SongsService.index()).data
+      // do a request to the server
+  }
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+
+</style>
+
+Next is to create a SongsService.js in the services folder to reflect the inclusion in the song.vue file as seen below
+
+import Api from '@/services/Api'
+
+export default {
+  index () {
+    return Api().get('songs')
+  }
+}
+
+
+Next is to include that route in the server, create a song controller as SongsController.js in the controller folder and put in this code
+
+const {Songs} = require('../models')
+
+module.exports = {
+  async index (req, res) {
+    try {
+      const songs = await Songs.findAll({
+        limit: 10
+      })
+      res.send(songs)
+    } catch (err) {
+      res.status(500).send({
+        error: 'An error occured trying to load songs'
+      })
+    }
+  },
+  async post (req, res) {
+    try {
+      const song = await Songs.create(req.body)
+      res.send(song)
+    } catch (err) {
+      res.status(400).send({
+        error: 'An error has occured trying to create songs'
+      })
+    }
+  }
+}
+
+
+Then create  Songs Model in the model folder and save it as Songs.js, this is to create the songs table in the database
+
+module.exports = (sequelize, DataTypes) => {
+  const Song = sequelize.define('Songs', {
+    title: DataTypes.STRING,
+    artist: DataTypes.STRING,
+    genre: DataTypes.STRING,
+    album: DataTypes.STRING,
+    albumImageUrl: DataTypes.STRING,
+    youtubeId: DataTypes.STRING,
+    lyrics: DataTypes.TEXT,
+    tab: DataTypes.TEXT
+  })
+  return Song
+}
+
+
+Use postman to test run if the post and get routes are working
+
+Next is to create the create song page in the client...inside the component, name it CreateSong.vue
+
+
 
 
 
