@@ -483,6 +483,7 @@ template: '<App/>',
 
 
 
+
 Create an header.vue file for the whole application to adopt one header...Implenting various links
 
 <template>
@@ -528,11 +529,18 @@ export default{
 The app.vue project would also be updated to adopt the header.vue page
 
 <template>
-  <div id="app">
-    <v-app><page-header />
-    <main>
-      <v-container fluid> <router-view></router-view></v-container>
-    </main>
+  
+<div id="app">
+    
+<v-app><page-header />
+    
+<main>
+      
+<v-container fluid>
+ <router-view></router-view>
+</v-container>
+    
+</main>
   
   </v-app>
     
@@ -573,6 +581,505 @@ export default {
 }
 
 </style>
+
+
+
+
+
+The register.vue page would eventually look like this
+
+
+
+
+<template>
+  <v-layout column>
+    <v-flex xs6 offset-xs3>
+      <div class="white elevation-2">
+        <v-toolbar flat dense class="cyan" dark>
+          <v-toolbar-title>Register</v-toolbar-title>
+        </v-toolbar>
+      </div>
+        <div class="pl-4 pr-4 pt-2 pb-2">
+    <v-text-field label="Email" v-model="email"></v-text-field>
+    <br>
+    <v-text-field label="Password" type="password" v-model="password"></v-text-field>
+    <br>
+    <div class="error" v-html="error" ></div>
+    <br>
+    <v-btn class="cyan" dark @click="register">Register</v-btn>
+
+        </div>
+    </v-flex>
+  </v-layout>
+</template>
+
+<script>
+import AuthenticationService from '@/services/AuthenticationService'
+export default {
+
+  data () {
+    return {
+      email: '',
+      password: '',
+      error: null
+    }
+  },
+  methods: {
+    async register () {
+      try {
+        await AuthenticationService.register({
+          email: this.email,
+          password: this.password
+        })
+      } catch (error) {
+        this.error = error.response.data.error
+      }
+    }
+  }
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+.error{
+  color: white;
+}
+</style>
+
+
+
+Then we create login.vue file in the component folder.
+
+The login.vue file would look like this
+
+<template>
+  <v-layout column>
+    <v-flex xs6 offset-xs3>
+      <div class="white elevation-2">
+        <v-toolbar flat dense class="cyan" dark>
+          <v-toolbar-title>Login</v-toolbar-title>
+        </v-toolbar>
+      </div>
+        <div class="pl-4 pr-4 pt-2 pb-2">
+    <v-text-field label="Email" v-model="email"></v-text-field>
+    <br>
+    <v-text-field label="Password" type="password" v-model="password"></v-text-field>
+    <br>
+    <div class="error" v-html="error" ></div>
+    <br>
+    <v-btn class="cyan" dark @click="login">Login</v-btn>
+
+        </div>
+    </v-flex>
+  </v-layout>
+</template>
+
+<script>
+import AuthenticationService from '@/services/AuthenticationService'
+export default {
+
+  data () {
+    return {
+      email: '',
+      password: '',
+      error: null
+    }
+  },
+  methods: {
+    async login () {
+      try {
+        await AuthenticationService.login({
+          email: this.email,
+          password: this.password
+        })
+      } catch (error) {
+        this.error = error.response.data.error
+      }
+    }
+  }
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+.error{
+  color: white;
+}
+</style>
+
+
+
+While the index.js file in the route folder would look like this
+
+
+import Vue from 'vue'
+import Router from 'vue-router'
+import Hello from '@/components/Hello'
+import Register from '@/components/Register'
+import Login from '@/components/Login'
+Vue.use(Router)
+
+export default new Router({
+  routes: [
+    {
+      path: '/',
+      name: 'home',
+      component: Hello
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: Register
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: Login
+    }
+  ]
+})
+
+
+
+We also move to the server folder to update the route.js file to look like this
+
+
+const AuthenticationController = require('./controllers/AuthenticationController')
+
+const AuthenticationControllerPolicy = require('./policies/AuthenticationControllerPolicy')
+module.exports = (app) => {
+  app.post('/register', AuthenticationControllerPolicy.register,
+    AuthenticationController.register)
+
+  app.post('/login',
+    AuthenticationController.login)
+}
+
+
+
+
+Then the AuthenticationController.js would be updated to authenticate any user signing in
+
+const {User} = require('../models')
+
+module.exports = {
+  async register (req, res) {
+    try {
+      const user = await User.create(req.body)
+      res.send(user.toJSON())
+    } catch (err) {
+      res.status(400).send({
+        error: 'This email account is already in use'
+      })
+    }
+  },
+  async login (req, res) {
+    try {
+      const {email, password} = req.body
+      const user = await User.findOne({
+        where: {
+          email: email
+        }
+      })
+      if (!user) {
+        return res.status(403).send({
+          error: 'The login information was incorrect'
+        })
+      }
+
+      const isPasswordValid = password === user.password
+      if (!isPasswordValid) {
+        return res.status(403).send({
+          error: 'The login information was incorrect'
+        })
+      }
+      const userJson = user.toJSON()
+      res.send({
+        user: userJson
+      })
+    } catch (err) {
+      res.status(500).send({
+        error: 'An error has occured while trying to login'
+      })
+    }
+  }
+}
+
+
+
+
+Then we would install an authentication package called $npm install --save jsonwebtoken
+After this would be included in the config.js file in the config folder
+
+module.exports = {
+  port: 8081,
+  db: {
+    database: process.env.DB_NAME || 'tabtracker',
+    user: process.env.DB_USER || 'tabtracker',
+    password: process.env.DB_PASS || 'tabtracker',
+    options: {
+      dialect: process.env.DIALECT || 'sqlite',
+      host: process.env.HOST || 'localhost',
+      storage: './tabtracker.sqlite'
+    }
+  },
+  authentication: {
+    jwtSecret: process.env.JWT_SECRET || 'secret'
+  }
+}
+
+
+Then the AuthenticationController.js page would be updated to reqiure the jsonwebtoken
+
+
+const {User} = require('../models')
+const jwt = require('jsonwebtoken')
+const config = require('../config/config')
+
+function jwtSignUser (user) {
+  const ONE_WEEK = 60 * 60 * 24 * 7
+  return jwt.sign(user, config.authentication.jwtSecret, {
+    expiresIn: ONE_WEEK
+  })
+}
+
+module.exports = {
+  async register (req, res) {
+    try {
+      const user = await User.create(req.body)
+      res.send(user.toJSON())
+    } catch (err) {
+      res.status(400).send({
+        error: 'This email account is already in use'
+      })
+    }
+  },
+  async login (req, res) {
+    try {
+      const {email, password} = req.body
+      const user = await User.findOne({
+        where: {
+          email: email
+        }
+      })
+      if (!user) {
+        return res.status(403).send({
+          error: 'The login information was incorrect'
+        })
+      }
+
+      const isPasswordValid = password === user.password // to be refactored to ( await user.comparePassword(password) after implementing hashing)
+      if (!isPasswordValid) {
+        return res.status(403).send({
+          error: 'The login information was incorrect'
+        })
+      }
+      const userJson = user.toJSON()
+      res.send({
+        user: userJson,
+        token: jwtSignUser(userJson)
+      })
+    } catch (err) {
+      res.status(500).send({
+        error: 'An error has occured while trying to login'
+      })
+    }
+  }
+}
+
+
+Use the POSTMAN to text if its working by trying to sign in
+
+The next thing is to install another package called bcrypt to help us harsh the password
+
+$npm install --save bcrypt-nodejs
+Then install bluebird to use promisifyAll
+$npm install --save bluebird
+
+After which the User.js file inside the models folder would be updated to hash the password
+
+const Promise = require('bluebird')
+const bcrypt = Promise.promisifyAll(require('bcrypt-nodejs'))
+
+function hashPassword (user, options) {
+  const SALT_FACTOR = 8
+  if (!user.changed('password')) {
+    return
+  }
+  return bcrypt
+    .genSaltAsync(SALT_FACTOR)
+    .then(salt => bcrypt.hashAsync(user.password, salt, null))
+    .then(hash => {
+      user.setDataValue('password', hash)
+    })
+}
+
+module.exports = (sequelize, DataTypes) => {
+  const User = sequelize.define('User', {
+    email: {
+      type: DataTypes.STRING,
+      unique: true
+    },
+    password: DataTypes.STRING
+  }, {
+    hooks: {
+      beforeCreate: hashPassword,
+      beforeUpdate: hashPassword,
+      beforeSave: hashPassword
+    }
+  })
+
+  User.prototype.comparePassword = function (password) {
+    return bcrypt.compareAsync(password, this.password)
+  }
+  return User
+}
+
+Next is to instal vuex which help interaction between modules of the project
+
+$npm install --save vuex
+$npm install --save vuex-router-sync
+
+Then we will update the main.js file as thus
+
+// The Vue build version to load with the `import` command
+// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
+import Vue from 'vue'
+import App from './App'
+import router from './router'
+import Vuetify from 'vuetify'
+import 'vuetify/dist/vuetify.min.css'
+
+Vue.config.productionTip = false
+
+Vue.use(Vuetify)
+
+/* eslint-disable no-new */
+new Vue({
+  el: '#app',
+  router,
+  store,
+  template: '<App/>',
+  components: { App }
+})
+
+
+We create a new folder inside the src folder called store and put in a file called store.js and put in this
+
+import Vue from 'vue'
+import Vuex from 'vuex'
+
+Vue.use(Vuex)
+
+export default new Vuex.Store({
+  strict: true,
+  state: {
+    token: null,
+    user: null,
+    isUserLoggedIn: false
+  },
+  mutations: {
+    setToken (state, token) {
+      state.token = token
+      if (token) {
+        state.isUserLoggedIn = true
+      } else {
+        state.isUserLoggedIn = false
+      }
+    },
+    setUser (state, user) {
+      state.user = user
+    }
+  },
+  actions: {
+    setToken ({commit}, token) {
+      commit('setToken', token)
+    },
+    setUser ({commit}, user) {
+      commit('setUser', user)
+    }
+  }
+})
+
+
+Then we update the Javascript section of the login.vue and register.vue page
+
+
+<script>
+import AuthenticationService from '@/services/AuthenticationService'
+export default {
+
+  data () {
+    return {
+      email: '',
+      password: '',
+      error: null
+    }
+  },
+  methods: {
+    async login () {
+      try {
+        const response = await AuthenticationService.login({
+          email: this.email,
+          password: this.password
+        })
+        this.$store.dispatch('setToken', response.data.token)
+        this.$store.dispatch('setUser', response.data.user)
+      } catch (error) {
+        this.error = error.response.data.error
+      }
+    }
+  }
+}
+</script>
+
+From the isUseLoggedIn set in the store.js file, we update the header.vue to hid buttons when one logged in
+
+<template>
+ <v-toolbar fixed class="cyan" dark>
+   <v-toolbar-title class="mr-4" ><span @click="navigateTo({name: 'home'})" class="home">Tab Tracker</span> </v-toolbar-title>
+
+ <v-toolbar-items>
+   <v-btn flat dark>Browse</v-btn>
+ </v-toolbar-items>
+ <v-spacer></v-spacer>
+ <v-toolbar-items>
+   
+    <v-btn
+    v-if="!$store.state.isUserLoggedIn" flat dark 
+ @click="navigateTo({name: 'login'})"
+ >Login</v-btn>
+
+    <v-btn
+    v-if="!$store.state.isUserLoggedIn"
+     flat dark 
+ @click="navigateTo({name: 'register'})"
+ >Sign Up</v-btn>
+ 
+ </v-toolbar-items>
+ </v-toolbar>
+</template>
+
+<script>
+export default{
+  methods: {
+    navigateTo (route) {
+      this.$router.push(route)
+    }
+  }
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+.home{
+  cursor: pointer;
+}
+</style>
+
+
+
+
 
 
 
