@@ -11,4 +11,6 @@ module.exports = (app) => {
     SongsController.index)
   app.post('/songs',
     SongsController.post)
+  app.get('/songs/:songId',
+    SongsController.show)
 }

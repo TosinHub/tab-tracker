@@ -13,6 +13,16 @@ module.exports = {
       })
     }
   },
+  async show (req, res) {
+    try {
+      const song = await Songs.findById(req.param.songId)
+      res.send(song)
+    } catch (err) {
+      res.status(500).send({
+        error: 'An error occured trying to load songs'
+      })
+    }
+  },
   async post (req, res) {
     try {
       const song = await Songs.create(req.body)
