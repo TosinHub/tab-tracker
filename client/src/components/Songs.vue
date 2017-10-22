@@ -2,10 +2,31 @@
  <v-layout column>
      <v-flex xs6 offset-xs3>
         <panel title="Songs">
-            <div v-for="song in songs" :key="song.id">
-                {{song.title}}
-                {{song.artist}}
-                {{song.album}}
+          <v-btn
+          slot="create song"
+          @click="navigateTo({name: 'create-songs'})"
+          class="cyan accent-2"
+          light
+          medium
+          absolute
+          right
+          middle
+          fab><v-icon>add</v-icon></v-btn>
+            <div class="song" v-for="song in songs" :key="song.id">
+              <v-layout>
+                <v-flex xs6>
+                  <div class="song-title">{{song.title}}</div>
+                  <div class="song-artist">{{song.artist}}</div>
+                  <div class="song-genre">{{song.genre}}</div>
+                <v-btn class="cyan" @click="navigateTo({
+                   name: 'ViewSong',
+                   params: {
+                     songId: song.id
+                   }
+                 })" dark>View Song</v-btn>
+                </v-flex>
+                <v-flex xs6><img class="image" :src="song.albumImageUrl"/></v-flex>
+              </v-layout>
             </div>
         </panel>
      </v-flex>
@@ -21,12 +42,12 @@ export default {
   },
   data () {
     return {
-      songs: [ {
-        title: 'Aye le',
-        artist: 'Onyeaka',
-        album: 'Now'
-      }
-      ]
+      songs: null
+    }
+  },
+  methods: {
+    navigateTo (route) {
+      this.$router.push(route)
     }
   },
   async mounted () {
@@ -38,5 +59,24 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+ .song {
+  overflow: hidden;
+}
+
+.song-title{
+  font-size: 30px;
+}
+
+.song-artist {
+  font-size: 24px;
+}
+.song-genre{
+  font-size: 18px;
+}
+ .image{
+  width: 70%;
+  margin: 0 auto;
+}
+
 
 </style>

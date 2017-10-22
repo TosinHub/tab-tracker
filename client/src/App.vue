@@ -33,4 +33,8 @@ export default {
 .input-group--text-field input{
   border-bottom: 1px solid black;
 }
+
+.error{
+  background-color: red;
+}
 </style>

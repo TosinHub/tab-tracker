@@ -1223,8 +1223,147 @@ module.exports = (sequelize, DataTypes) => {
 
 Use postman to test run if the post and get routes are working
 
-Next is to create the create song page in the client...inside the component, name it CreateSong.vue
+Next is to create the create song page in the client...inside the component, name it CreateSong.vue..A page which would help create a new song details
+Create a route in the index.js file in the router folder by updating it with
 
+ {
+      path: '/songs/create',
+      name: 'create-songs',
+      component: CreateSongs
+    }
+
+
+Then the CreateSong.vue would hhave the following codes
+ 
+
+
+
+<template>
+ <v-layout>
+    <v-flex xs6>
+      <panel title="Song Metadata">        
+    <v-text-field label="Title" v-model="song.title"></v-text-field>
+    
+    <v-text-field label="Artist" v-model="song.artist"></v-text-field>
+    <v-text-field label="Genre" v-model="song.genre"></v-text-field>
+    <v-text-field label="Album" v-model="song.album"></v-text-field>
+    <v-text-field label="Album Image Url" v-model="song.albumImageUrl"></v-text-field>
+    <v-text-field label="You Tube Id" v-model="song.youtubeId"></v-text-field>    
+   <!--  <div class="error" v-html="error" ></div>    -->
+      </panel>
+    </v-flex>
+    <v-flex xs6>
+      <panel title="Song Structure" class="ml-4">
+    <v-text-field label="Lyrics" v-model="song.lyrics" multi-line></v-text-field>
+    <v-text-field label="Tab" v-model="song.tab" multi-line></v-text-field>
+      </panel>
+     <v-btn class="cyan" dark @click="create">Create Song</v-btn>
+    </v-flex>
+  </v-layout>
+</template>
+
+<script>
+import Panel from '@/components/Panel'
+import SongsService from '@/services/SongsService'
+export default {
+  data () {
+    return {
+      song: {
+        title: null,
+        artist: null,
+        genre: null,
+        album: null,
+        albumImageUrl: null,
+        youtubeId: null,
+        lyrics: null,
+        tab: null
+      }
+    }
+  },
+  methods: {
+    async create () {
+      try {
+        await SongsService.post(this.song)
+           this.$router.push({
+          name: 'songs'
+        })
+      } catch (error) {
+        console.log(error)
+      }
+    }
+  },
+  components: {
+    Panel
+  }
+}
+</script>
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+
+</style>
+
+
+Update SongsService.js file in the service folder to post into the backend song post route
+
+import Api from '@/services/Api'
+
+export default {
+  index () {
+    return Api().get('songs')
+  },
+  post (song) {
+    return Api().post('songs', song)
+  }
+}
+
+
+
+We would add an ADD icon to access the create song page...The index.html page would be updated at the header section.
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+Then we would update the Song page to have the add button. 
+We would add a new slot in the toolbar of the header section   <slot name="create song" /> (just below the title section on the panel.vue file)
+Then we would add the button  in the song.vue page just under the title tage and call the slot name
+
+<v-btn
+          slot="create song"
+          @click="navigateTo({name: 'create-songs'})"
+          class="cyan accent-2"
+          light
+          medium
+          absolute
+          right
+          middle
+          fab><v-icon>add</v-icon></v-btn>
+
+
+
+Then we update the script section on the song.vue page with a method to handle the click event on the create song button
+
+
+<script>
+import SongsService from '@/services/SongsService'
+import Panel from '@/components/Panel'
+export default {
+  components: {
+    Panel
+  },
+  data () {
+    return {
+      songs: null
+    }
+  },
+  methods: {
+    navigateTo (route) {
+      this.$router.push(route)
+    }
+  },
+  async mounted () {
+    this.songs = (await SongsService.index()).data
+      // do a request to the server
+  }
+}
+</script>
 
 
 
