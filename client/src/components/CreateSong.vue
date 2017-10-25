@@ -1,16 +1,16 @@
 <template>
  <v-layout>
     <v-flex xs6>
-      <panel title="Song Metadata">        
+      <panel title="Song Metadata">
     <v-text-field label="Title" required
     :rules="[required]" v-model="song.title"></v-text-field>
-    
+
     <v-text-field label="Artist" required
     :rules="[required]" v-model="song.artist"></v-text-field>
     <v-text-field label="Genre" required :rules="[required]" v-model="song.genre"></v-text-field>
     <v-text-field label="Album" required :rules="[required]" v-model="song.album"></v-text-field>
     <v-text-field label="Album Image Url" required :rules="[required]" v-model="song.albumImageUrl"></v-text-field>
-    <v-text-field label="You Tube Id" required :rules="[required]" v-model="song.youtubeId"></v-text-field>    
+    <v-text-field label="You Tube Id" required :rules="[required]" v-model="song.youtubeId"></v-text-field>
    <!--  <div class="error" v-html="error" ></div>    -->
       </panel>
     </v-flex>
@@ -76,5 +76,4 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 
 <style scoped>
-
 </style>

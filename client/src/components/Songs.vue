@@ -62,11 +62,9 @@ export default {
  .song {
   overflow: hidden;
 }
-
 .song-title{
   font-size: 30px;
 }
-
 .song-artist {
   font-size: 24px;
 }
@@ -77,6 +75,4 @@ export default {
   width: 70%;
   margin: 0 auto;
 }
-
-
 </style>

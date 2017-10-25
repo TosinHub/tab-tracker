@@ -1,7 +1,11 @@
 import axios from 'axios'
-// return a connector
+import store from '@/store/store'
+
 export default () => {
   return axios.create({
-    baseURL: `http://localhost:8081` // pointing to the backend url
+    baseURL: `http://localhost:8081/`,
+    headers: {
+      Authorization: `Bearer ${store.state.token}`
+    }
   })
 }
